@@ -42,6 +42,9 @@ def getPlayers(db : db_dependency):
 
 @app.post("/Players", response_model=basemodels.User)
 def CreatePlayer(user: basemodels.User ,db: db_dependency):
+    db_user = db.query(models.Users).filter(models.Users.Name == user.Name).first()
+    if db_user:
+        return db_user
     db_user = models.Users(**user.dict())
     db.add(db_user)
     db.commit()
@@ -49,14 +52,17 @@ def CreatePlayer(user: basemodels.User ,db: db_dependency):
     return db_user
 
 @app.post('/Play', response_model=list[basemodels.User])
-def ChangeScore(user1: basemodels.Game, user2: basemodels.Game, db : db_dependency):
-    db_user1 = db.query(models.Users).filter(models.Users.Name == user1.Name).first()
-    db_user2 = db.query(models.Users).filter(models.Users.Name == user2.Name).first()
-    if user1.State == "WIN":
+def ChangeScore(users: list[basemodels.Game], db : db_dependency):
+    print(users)
+    db_user1 = db.query(models.Users).filter(models.Users.Name == users[0].Name).first()
+    db_user2 = db.query(models.Users).filter(models.Users.Name == users[1].Name).first()
+    print(db_user1)
+    print(db_user2)
+    if users[0].State == "WIN":
         db_user1.Score += 1
     else:
         db_user1.Score -= 1
-    if user2.State == "WIN":
+    if users[1].State == "WIN":
         db_user2.Score += 1
     else:
         db_user2.Score -= 1
